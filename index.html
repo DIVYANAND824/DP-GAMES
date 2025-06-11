@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DPGAMING STUDIO</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #f9d423, #ff4e50);
+      color: #333;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 3em;
+      color: white;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px #ff4e50;
+    }
+
+    #search {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      font-size: 1.2em;
+      width: 80%;
+      max-width: 500px;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      padding: 10px;
+    }
+
+    .card {
+      background: #fff9c4;
+      border-radius: 20px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+
+    .card img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 1.1em;
+      color: #333;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2em;
+      }
+
+      #search {
+        font-size: 1em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>DPGAMING STUDIO</h1>
+  <input type="text" id="search" placeholder="Search games...">
+  <div id="gameGrid" class="grid"></div>
+
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/16kc7Sv_zB9VEmfZUH2vnPNgDZbOmq1oyCrOj5XgCZpM/export?format=csv";
+
+    async function loadGames() {
+      const res = await fetch(CSV_URL);
+      const text = await res.text();
+      const rows = text.trim().split("\n").slice(1); // skip header
+      const games = rows.map(row => {
+        const [name, icon, link] = row.split(",");
+        return { name: name.trim(), icon: icon.trim(), link: link.trim() };
+      });
+      return games;
+    }
+
+    function createCard(game) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.onclick = () => window.open(game.link, '_blank');
+      card.innerHTML = `
+        <img src="${game.icon}" alt="${game.name}" />
+        <div class="card-title">${game.name}</div>
+      `;
+      return card;
+    }
+
+    function displayGames(games) {
+      const grid = document.getElementById('gameGrid');
+      grid.innerHTML = '';
+      games.forEach(game => grid.appendChild(createCard(game)));
+    }
+
+    async function init() {
+      const allGames = await loadGames();
+      displayGames(allGames);
+
+      document.getElementById('search').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = allGames.filter(g => g.name.toLowerCase().includes(term));
+        displayGames(filtered);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
